@@ -1,8 +1,12 @@
 package com.yanolja_final.crawler.util;
 
+import java.time.Duration;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class RenderedHtmlFetcher {
 
@@ -26,6 +30,8 @@ public class RenderedHtmlFetcher {
      */
     public static String fetch(String url) {
         driver.get(url);
+        new WebDriverWait(driver, Duration.ofSeconds(30))
+            .until(ExpectedConditions.presenceOfElementLocated(By.className("swiper-slide-active")));
         return driver.getPageSource();
     }
 }

@@ -3,11 +3,11 @@ package com.yanolja_final.crawler.util;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.RepeatedTest;
 
 public class RenderedHtmlFetcherTest {
 
-    @Test
+    @RepeatedTest(value = 10)
     @DisplayName("렌더링 된 HTML 내용을 잘 가져온다")
     void get() {
         // given
