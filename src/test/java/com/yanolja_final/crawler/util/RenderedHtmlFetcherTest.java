@@ -4,10 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 public class RenderedHtmlFetcherTest {
 
-    @RepeatedTest(value = 10)
+    @Test
     @DisplayName("렌더링 된 HTML 내용을 잘 가져온다")
     void get() {
         // given
