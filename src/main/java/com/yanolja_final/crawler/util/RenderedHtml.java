@@ -4,9 +4,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-/**
- * 브라우저에 렌더링 된 후의 HTML 소스 코드를 긁는 클래스
- */
 public class RenderedHtml {
 
     private static final WebDriver driver;
@@ -24,6 +21,9 @@ public class RenderedHtml {
         driver = new ChromeDriver(options);
     }
 
+    /**
+     * @return 렌더링 된 HTML 소스
+     */
     public static String fetch(String url) {
         driver.get(url);
         return driver.getPageSource();
