@@ -3,6 +3,7 @@ package com.yanolja_final.crawler;
 import com.yanolja_final.crawler.application.DetailCrawler;
 import com.yanolja_final.crawler.application.ListCrawler;
 import com.yanolja_final.crawler.application.dto.PackageCode;
+import com.yanolja_final.crawler.reader.PackageCodeReader;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.WebDriver;
@@ -23,9 +24,7 @@ public class Main implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         detailCrawler.crawle(
-            List.of(
-                new PackageCode("A6013263", "24031210166")
-            )
+            PackageCodeReader.read()
         );
     }
 }
