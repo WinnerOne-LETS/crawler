@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class RenderedHtmlTest {
+public class RenderedHtmlFetcherTest {
 
     @Test
     @DisplayName("렌더링 된 HTML 내용을 잘 가져온다")
@@ -18,8 +18,8 @@ public class RenderedHtmlTest {
         String renderDependentKeyword2 = "//tourimage.interpark.com/Spot/183/15509/201602/6359028033778087440.jpg";
 
         // when
-        String source = RenderedHtml.fetch(url);
-        String source2 = RenderedHtml.fetch(url2);
+        String source = RenderedHtmlFetcher.fetch(url);
+        String source2 = RenderedHtmlFetcher.fetch(url2);
 
         // then
         assertThat(source).contains(renderDependentKeyword);
