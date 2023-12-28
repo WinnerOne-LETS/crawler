@@ -14,7 +14,7 @@ class ApiResponseFetcherTest {
     @ParameterizedTest
     @MethodSource("providedSourceForGet")
     @DisplayName("GET 메서드 요청에 대해 Http ResponseBody가 잘 들어온다")
-    void get(String url, String keyword) throws Exception {
+    void get(String url, String keyword) {
         String responseBody = ApiResponseFetcher.get(url);
         assertThat(responseBody).contains(keyword);
     }
@@ -50,7 +50,7 @@ class ApiResponseFetcherTest {
 
     @Test
     @DisplayName("POST 메서드 요청에 대해 Http ResponseBody가 잘 들어온다")
-    void post() throws Exception {
+    void post() {
         // given
         String url = "https://travel.interpark.com/api-package/goods/otherGoods";
         String requestBody = "{\"baseGoodsCD\":\"B4010646\",\"startDate\":\"20240305\",\"endDate\":\"20240305\",\"sort\":\"L\",\"pageNum\":\"1\",\"pageSize\":\"20\",\"sortMode\":\"A\"}";

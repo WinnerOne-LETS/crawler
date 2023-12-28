@@ -7,31 +7,43 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ApiResponseFetcher {
 
     /**
      * @return Http ResponseBody
      */
-    static String get(String url) throws Exception {
-        HttpURLConnection con = getConnection(url, "GET");
+    public static String get(String url) {
+        try {
+            HttpURLConnection con = getConnection(url, "GET");
 
-        if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new RuntimeException("200 응답이 오지 않음: " + con.getResponseCode());
+            if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new RuntimeException("200 응답이 오지 않음: " + con.getResponseCode());
+            }
+
+            return getResponseBody(con);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException();
         }
-
-        return getResponseBody(con);
     }
 
-    static String post(String url, String requestBody) throws Exception {
-        HttpURLConnection con = getConnection(url, "POST");
-        write(con, requestBody);
+    public static String post(String url, String requestBody) {
+        try {
+            HttpURLConnection con = getConnection(url, "POST");
+            write(con, requestBody);
 
-        if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new RuntimeException("200 응답이 오지 않음: " + con.getResponseCode());
+            if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new RuntimeException("200 응답이 오지 않음: " + con.getResponseCode());
+            }
+
+            return getResponseBody(con);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException();
         }
-
-        return getResponseBody(con);
     }
 
     private static void write(HttpURLConnection con, String requestBody) throws IOException {

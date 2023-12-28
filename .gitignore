@@ -202,3 +202,7 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,intellij+all,windows,macos
+
+!src/main/resources/application.yml
+!src/main/resources/chromedriver
+src/main/resources/*

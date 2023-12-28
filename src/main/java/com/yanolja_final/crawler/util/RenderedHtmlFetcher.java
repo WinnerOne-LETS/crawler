@@ -30,7 +30,7 @@ public class RenderedHtmlFetcher {
      */
     public static String fetch(String url) {
         driver.get(url);
-        new WebDriverWait(driver, Duration.ofSeconds(30))
+        new WebDriverWait(driver, Duration.ofSeconds(60))
             .until(ExpectedConditions.presenceOfElementLocated(By.className("swiper-slide-active")));
         return driver.getPageSource();
     }
