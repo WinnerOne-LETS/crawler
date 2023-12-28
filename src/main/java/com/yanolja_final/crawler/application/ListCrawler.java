@@ -38,7 +38,7 @@ public class ListCrawler {
                 .append('\n');
         }
 
-        saveFile("list.txt", sb.toString());
+        saveFile("codes.txt", sb.toString());
         log.info("{}개 저장됨", total.size());
     }
 

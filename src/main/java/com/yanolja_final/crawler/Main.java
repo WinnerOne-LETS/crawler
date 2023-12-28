@@ -1,6 +1,9 @@
 package com.yanolja_final.crawler;
 
+import com.yanolja_final.crawler.application.DetailCrawler;
 import com.yanolja_final.crawler.application.ListCrawler;
+import com.yanolja_final.crawler.application.dto.PackageCode;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -15,10 +18,14 @@ import org.springframework.stereotype.Component;
 public class Main implements ApplicationRunner {
 
     @Autowired
-    ListCrawler listCrawler;
+    DetailCrawler detailCrawler;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        listCrawler.crawle();
+        detailCrawler.crawle(
+            List.of(
+                new PackageCode("A6013263", "24031210166")
+            )
+        );
     }
 }
