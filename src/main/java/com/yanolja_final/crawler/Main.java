@@ -2,6 +2,7 @@ package com.yanolja_final.crawler;
 
 import com.yanolja_final.crawler.application.DetailCrawler;
 import com.yanolja_final.crawler.application.ListCrawler;
+import com.yanolja_final.crawler.application.RenderedHtmlCrawler;
 import com.yanolja_final.crawler.application.dto.PackageCode;
 import com.yanolja_final.crawler.reader.PackageCodeReader;
 import java.awt.Toolkit;
@@ -24,21 +25,22 @@ import org.springframework.stereotype.Component;
 public class Main implements ApplicationRunner {
 
     @Autowired
-    DetailCrawler detailCrawler;
+    RenderedHtmlCrawler renderedHtmlCrawler;
 
     @Override
     public void run(ApplicationArguments args) {
         try {
-            detailCrawler.crawle(PackageCodeReader.read());
+            renderedHtmlCrawler.crawle(PackageCodeReader.read());
         } catch (Exception e) {
             beep();
+            throw new RuntimeException(e);
         }
     }
 
     private void beep() {
         int hz = 500;
         int msecs = 500;
-        int times = 100;
+        int times = 5;
 
         try {
             // 오디오 포맷 설정
