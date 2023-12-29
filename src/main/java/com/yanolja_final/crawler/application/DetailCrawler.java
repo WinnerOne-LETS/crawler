@@ -3,6 +3,7 @@ package com.yanolja_final.crawler.application;
 import com.yanolja_final.crawler.application.dto.PackageCode;
 import com.yanolja_final.crawler.application.dto.PackageJsons;
 import com.yanolja_final.crawler.util.ApiResponseFetcher;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,28 +24,32 @@ public class DetailCrawler {
 
     public void crawle(List<PackageCode> codes) {
         int order = 1;
+        int successCount = 0;
+        int failCount = 0;
         for (PackageCode code : codes) {
-            crawle(code);
+            boolean isSuccess = crawle(code);
+            if (isSuccess) {
+                successCount++;
+            } else {
+                failCount++;
+            }
 
             order++;
-            log.info("{} 중 {}번째", codes.size(), order);
+            log.info("{}: {} 중 {}번째 {} (현재 {}개 성공, {}개 실패)", code, codes.size(), order, isSuccess ? "성공" : "실패", successCount, failCount);
         }
     }
 
-    private void crawle(PackageCode code) {
+    private boolean crawle(PackageCode code) {
         if (alreadyExists(code)) {
-            return;
+            return true;
         }
-
-        String imageResponse = crawleImage(code);
-//        log.info("imageResponse\n{}", imageResponse);
-        String countResponse = crawleCount(code);
-//        log.info("countResponse\n{}", countResponse);
 
         String goodsResponse = crawleGoods(code); // TrafficSeq 가지고 있음
         if ("-1".equals(goodsResponse)) {
-            return;
+            removeFromFile(code);
+            return false;
         }
+
         String trafficSeq = goodsResponse.split("TrafficSeq\":\"")[1].split("\"")[0];
 //        log.info("goodsResponse\n{}", goodsResponse);
 
@@ -53,6 +58,10 @@ public class DetailCrawler {
 //        log.info("infoResponse\n{}", infoResponse);
 
         String scheduleResponse = crawleSchedule(code, trafficSeq);
+        if ("-1".equals(scheduleResponse)) {
+            removeFromFile(code);
+            return false;
+        }
         String startDate = goodsResponse.split("StartDate\":\"")[1].split("\"")[0];
 //        log.info("scheduleResponse\n{}", scheduleResponse);
 
@@ -65,8 +74,42 @@ public class DetailCrawler {
         String calendarResponse = crawleCalendar(code);
 //        log.info("calendarResponse\n{}", calendarResponse);
 
+        String imageResponse = crawleImage(code);
+//        log.info("imageResponse\n{}", imageResponse);
+        String countResponse = crawleCount(code);
+//        log.info("countResponse\n{}", countResponse);
+
         PackageJsons jsons = new PackageJsons(imageResponse, countResponse, goodsResponse, infoResponse, scheduleResponse, otherGoodsResponse, reviewResponse, calendarResponse);
         save(code, jsons);
+        return true;
+    }
+
+    private void removeFromFile(PackageCode code) {
+        String keyword = String.format("%s,%s", code.goodsCode(), code.baseGoodsCode());
+        StringBuilder content = new StringBuilder();
+
+        // 파일 읽기
+        String filePath = "./src/main/resources/codes.txt";
+        Path path = Paths.get(filePath);
+
+        try (BufferedReader reader = Files.newBufferedReader(path)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.equals(keyword)) continue;
+                content.append(line).append(System.lineSeparator());
+            }
+        } catch (IOException e) {
+            log.error("파일 읽기 중 오류 발생", e);
+            throw new RuntimeException(e);
+        }
+
+        // 파일 쓰기
+        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+            writer.write(content.toString());
+        } catch (IOException e) {
+            log.error("파일 쓰기 중 오류 발생", e);
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean alreadyExists(PackageCode code) {
@@ -121,15 +164,21 @@ public class DetailCrawler {
 
         String response = ApiResponseFetcher.get(curUrl);
 
-        boolean isTrashData = !response.contains("CodeKRNM");
+        boolean isGone = response.contains("<title></title>");
+        if (isGone) {
+            log.info("{} 없음 TrashData {}", code, response.trim());
+            return "-1";
+        }
+        boolean isTrashData = !response.contains("Remark");
         if (isTrashData) {
+            log.info("{} Remark TrashData {}", code, response.trim());
             return "-1";
         }
 
         assertContains(response, "ReserveCnt", "RemainSeat", "MinStartNum", "ProductFeature",
             "GoodsDetailTraffic", "GoodsDetailHotel", "GoodsDetailTour", "GoodsDetailMeal",
-            "GoodsDetailEtc", "InclusionList", "ExclusionList", "CodeKRNM", "Remark",
-            "ProductAttention", "CancelCommission", "PassVisa");
+            "GoodsDetailEtc", "InclusionList", "ExclusionList", "Remark",
+            "ProductAttention", "CancelCommission", "PassVisa"); // CodeKRNM
 
         return response;
     }
@@ -139,6 +188,13 @@ public class DetailCrawler {
         this.curUrl = url;
 
         String response = ApiResponseFetcher.get(url);
+
+        boolean isTrashData = !response.contains("DaySeq");
+        if (isTrashData) {
+            log.info("{} DaySeq TrashData {}", code, response.trim());
+            return "-1";
+        }
+
         assertContains(response, "DaySeq", "SimpleDesc", "Breakfast", "Lunch", "Dinner");
 
         return response;
@@ -150,7 +206,7 @@ public class DetailCrawler {
 
         String response = ApiResponseFetcher.get(url);
 
-        assertContains(response, "GoodsName", "CurrencyTypeNM", "Adult", "GoodsPrice", "FuelTax", "AirTax");
+        assertContains(response, "GoodsName", "Adult", "GoodsPrice", "FuelTax", "AirTax"); // CurrencyTypeNM
         return response;
     }
 
