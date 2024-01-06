@@ -207,3 +207,4 @@ gradle-app.setting
 !src/main/resources/chromedriver
 src/main/resources/*
 details/
+details_bak/

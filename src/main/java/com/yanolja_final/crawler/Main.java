@@ -25,12 +25,12 @@ import org.springframework.stereotype.Component;
 public class Main implements ApplicationRunner {
 
     @Autowired
-    RenderedHtmlCrawler renderedHtmlCrawler;
+    DetailCrawler detailCrawler;
 
     @Override
     public void run(ApplicationArguments args) {
         try {
-            renderedHtmlCrawler.crawle(PackageCodeReader.read());
+            detailCrawler.crawle(PackageCodeReader.read());
         } catch (Exception e) {
             beep();
             throw new RuntimeException(e);

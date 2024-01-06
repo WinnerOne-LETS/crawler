@@ -6,6 +6,8 @@ import java.time.LocalTime;
 import java.util.List;
 
 public record PackageData(
+
+    PackageCode code,
     LocalDate departureDate, // otherGoods
     LocalTime departureTime, // otherGoods
     LocalTime endTime, // otherGoods

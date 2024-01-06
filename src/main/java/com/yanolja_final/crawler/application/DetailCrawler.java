@@ -22,6 +22,10 @@ public class DetailCrawler {
     private String curUrl = "";
     private PackageJsons jsons;
 
+    private int noSchedules = 0;
+    private int goneOrCanceled = 0;
+    private int noRemark = 0;
+
     public void crawle(List<PackageCode> codes) {
         int order = 1;
         int successCount = 0;
@@ -35,7 +39,7 @@ public class DetailCrawler {
             }
 
             order++;
-            log.info("{}: {} 중 {}번째 {} (현재 {}개 성공, {}개 실패)", code, codes.size(), order, isSuccess ? "성공" : "실패", successCount, failCount);
+            log.info("{}: {} 중 {}번째 {} (현재 {}개 성공, {}개 실패) (일정표없음 {} 없음 {} R없음 {})", code, codes.size(), order, isSuccess ? "성공" : "실패", successCount, failCount, noSchedules, goneOrCanceled, noRemark);
         }
     }
 
@@ -167,11 +171,13 @@ public class DetailCrawler {
         boolean isGone = response.contains("<title></title>");
         if (isGone) {
             log.info("{} 없음 TrashData {}", code, response.trim());
+            goneOrCanceled++;
             return "-1";
         }
         boolean isTrashData = !response.contains("Remark");
         if (isTrashData) {
             log.info("{} Remark TrashData {}", code, response.trim());
+            noRemark++;
             return "-1";
         }
 
@@ -191,11 +197,12 @@ public class DetailCrawler {
 
         boolean isTrashData = !response.contains("DaySeq");
         if (isTrashData) {
-            log.info("{} DaySeq TrashData {}", code, response.trim());
-            return "-1";
+//            log.info("{} DaySeq TrashData {}", code, response.trim());
+            noSchedules++;
+//            return "-1";
         }
 
-        assertContains(response, "DaySeq", "SimpleDesc", "Breakfast", "Lunch", "Dinner");
+//        assertContains(response, "DaySeq", "SimpleDesc", "Breakfast", "Lunch", "Dinner");
 
         return response;
     }
@@ -238,7 +245,7 @@ public class DetailCrawler {
 
     private String crawleCalendar(PackageCode code) {
         // TODO 주의: 2023 12 날짜에 의존적
-        String url = "https://travel.interpark.com/api-package/calendar/2023/12?resveCours=p&baseGoodsCD=" + code.baseGoodsCode();
+        String url = "https://travel.interpark.com/api-package/calendar/2024/1?resveCours=p&baseGoodsCD=" + code.baseGoodsCode();
         this.curUrl = url;
 
         String response = ApiResponseFetcher.get(url);
