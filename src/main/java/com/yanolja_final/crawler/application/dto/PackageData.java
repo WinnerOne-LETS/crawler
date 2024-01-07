@@ -36,30 +36,3 @@ public record PackageData(
 
 }
 
-record DepartureData(
-    LocalDate departureDate,
-    int priceDiff
-) {
-
-}
-
-record ScheduleData(
-    int day,
-    String schedule,
-    String breakfast,
-    String lunch,
-    String dinner
-) {
-
-}
-
-record ReviewData(
-    String content,
-    int productScore,
-    int scheduleScore,
-    int guideScore,
-    int appointmentScore,
-    LocalDateTime createdAt
-) {
-
-}
