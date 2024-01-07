@@ -209,3 +209,4 @@ src/main/resources/*
 details/
 details_bak/
 codes.txt
+*.xlsx

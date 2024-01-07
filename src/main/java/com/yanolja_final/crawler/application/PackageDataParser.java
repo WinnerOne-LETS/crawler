@@ -18,6 +18,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,14 +30,20 @@ import org.springframework.stereotype.Component;
 public class PackageDataParser {
 
     public List<PackageData> parse(List<PackageCode> codes) {
-        int idx = 1;
+        AtomicInteger idx = new AtomicInteger(1);
 
-        List<PackageData> datas = new ArrayList<>();
-        for (PackageCode code : codes) {
-            log.info("{} {}", idx++, code);
-            datas.add(parse(code));
-        }
-        return datas;
+        List<PackageData> collect = codes.parallelStream()
+            .map(code -> {
+                if (idx.getAndIncrement() % 500 == 0) {
+                    log.info("{} {}", idx.get(), code);
+                }
+                return parse(code);
+            })
+            .collect(Collectors.toList());
+
+        log.info("{}개 파싱 완료", idx.get());
+
+        return collect;
     }
 
     public PackageData parse(PackageCode code) {
@@ -61,7 +69,7 @@ public class PackageDataParser {
         int lodgeDays = Integer.parseInt(infos[2].split("박")[0]);
         int tripDays = Integer.parseInt(infos[2].split("박")[1].split("일")[0]);
 
-        log.info("html\n썸네일: {}\n교통편: {}\n요약 정보: {}\n{}박 {}일", imageUrls, transportation, info.replace("\n", "\\n"), lodgeDays, tripDays);
+        log.debug("html\n썸네일: {}\n교통편: {}\n요약 정보: {}\n{}박 {}일", imageUrls, transportation, info.replace("\n", "\\n"), lodgeDays, tripDays);
 
         // introImageUrls, inclusionList, exclusionList, reservationCount, maxReservationCount, minReservationCount
         String goodsJson = read(code, "goodsResponse");
@@ -72,14 +80,17 @@ public class PackageDataParser {
             .map(t -> t.split("\\\\\"")[0])
             .toList();
 
-        String inclusionList = goodsJson.split("\"InclusionList\":")[1].split(",\"InfantPrice\"")[0];
-        String exclusionList = goodsJson.split("\"ExclusionList\":")[1].split(",\"FamilyPack\"")[0];
+        String unparsedInclusionList = goodsJson.split("\"InclusionList\":")[1].split(",\"InfantPrice\"")[0];
+        String inclusionList = parse(unparsedInclusionList);
+
+        String unparsedExclusionList = goodsJson.split("\"ExclusionList\":")[1].split(",\"FamilyPack\"")[0];
+        String exclusionList = parse(unparsedExclusionList);
 
         int reservationCount = Integer.parseInt(goodsJson.split("\"ReserveCnt\":\"")[1].split("\"")[0]);
         int maxReservationCount = reservationCount + Integer.parseInt(goodsJson.split("\"RemainSeat\":\"")[1].split("\"")[0]);
         int minReservationCount = Integer.parseInt(goodsJson.split("\"MinStartNum\":\"")[1].split("\"")[0]);
 
-        log.info("goods\n상품소개이미지: {}\n포함: {}\n불포함: {}\n{}명 예약, 최대 {} 예약 가능, {}명 이상 되어야 출발", introImageUrls, inclusionList, exclusionList, reservationCount, maxReservationCount, minReservationCount);
+        log.debug("goods\n상품소개이미지: {}\n포함: {}\n불포함: {}\n{}명 예약, 최대 {} 예약 가능, {}명 이상 되어야 출발", introImageUrls, inclusionList, exclusionList, reservationCount, maxReservationCount, minReservationCount);
 
         // nationName, title, shoppingCount, adultPrice, infantPrice, babyPrice
         String infoJson = read(code, "infoResponse");
@@ -93,7 +104,7 @@ public class PackageDataParser {
         int infantPrice = Integer.parseInt(tmpTotalPrice.split("\"Infant\":")[1].split(",")[0]);
         int babyPrice = Integer.parseInt(tmpTotalPrice.split("\"Baby\":")[1].split("}")[0]);
 
-        log.info("info\n나라: {}\n제목: {}\n쇼핑횟수: {}\n성인 {}원, 소아 {}원, 유아 {}원", nationName, title, shoppingCount, adultPrice, infantPrice, babyPrice);
+        log.debug("info\n나라: {}\n제목: {}\n쇼핑횟수: {}\n성인 {}원, 소아 {}원, 유아 {}원", nationName, title, shoppingCount, adultPrice, infantPrice, babyPrice);
 
         // departureDate, departureTime, endTime
         String otherGoodsJson = read(code, "otherGoodsResponse");
@@ -107,7 +118,7 @@ public class PackageDataParser {
         String strEndTime = otherGoodsJson.split("LocalArrivalTime\":\"")[1].split("\"")[0];
         LocalTime endTime = strEndTime.trim().isEmpty() ? null : LocalTime.parse(strEndTime, DateTimeFormatter.ofPattern("HHmm"));
 
-        log.info("otherGoods\n출발일: {}\n출발시간: {}\n도착시간: {}", departureDate, departureTime, endTime);
+        log.debug("otherGoods\n출발일: {}\n출발시간: {}\n도착시간: {}", departureDate, departureTime, endTime);
 
         // departures (departureDate, priceDiff)
         String calendarJson = read(code, "calendarResponse");
@@ -138,7 +149,7 @@ public class PackageDataParser {
             }
         }
 
-        log.info("calendar\n출발일정들: {}",departures);
+        log.debug("calendar\n출발일정들: {}",departures);
 
         // reviews (content, productScore, scheduleScore, guideScore, appointmentScore, createdAt)
         String reviewJson = read(code, "reviewResponse");
@@ -164,7 +175,7 @@ public class PackageDataParser {
             reviews.add(reviewData);
         }
 
-        log.info("reviews\n리뷰: {}", reviews);
+        log.debug("reviews\n리뷰: {}", reviews);
 
         // optionalTourCount, schedules (day, scheduleSummaries, breakfast, lunch, dinner)
         String scheduleJson = read(code, "scheduleResponse");
@@ -194,7 +205,7 @@ public class PackageDataParser {
 
             optionalTourCount += daySchedule.getJSONArray("SelTourList").length();
         }
-        log.info("schedules\n선택관광 수: {}\n일정들: {}", optionalTourCount, scheduleDatas);
+        log.debug("schedules\n선택관광 수: {}\n일정들: {}", optionalTourCount, scheduleDatas);
 
         return new PackageData(
             code,
@@ -223,6 +234,21 @@ public class PackageDataParser {
             scheduleDatas,
             reviews
         );
+    }
+
+    private static String parse(String strInclusionList) {
+        JSONArray clusionListArr = new JSONArray(strInclusionList);
+        for (Object o : clusionListArr) {
+            JSONObject inclusionObj = (JSONObject) o;
+
+            inclusionObj.put("title", inclusionObj.get("CodeKRNM"));
+            inclusionObj.put("description", inclusionObj.get("Remark"));
+
+            inclusionObj.remove("TravelCondTypeCD");
+            inclusionObj.remove("CodeKRNM");
+            inclusionObj.remove("Remark");
+        }
+        return clusionListArr.toString();
     }
 
     public String read(PackageCode code, String type) {

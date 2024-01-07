@@ -1,8 +1,11 @@
 package com.yanolja_final.crawler;
 
-import com.yanolja_final.crawler.application.DetailCrawler;
+import com.yanolja_final.crawler.application.ExcelExporter;
 import com.yanolja_final.crawler.application.PackageDataParser;
+import com.yanolja_final.crawler.application.dto.PackageData;
 import com.yanolja_final.crawler.reader.PackageCodeReader;
+import java.util.List;
+import java.util.UUID;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
@@ -20,14 +23,13 @@ public class Main implements ApplicationRunner {
     @Autowired
     PackageDataParser parser;
 
+    @Autowired
+    ExcelExporter excelExporter;
+
     @Override
     public void run(ApplicationArguments args) {
-        try {
-            parser.parse(PackageCodeReader.read());
-        } catch (Exception e) {
-            beep();
-            throw new RuntimeException(e);
-        }
+        List<PackageData> packageDatas = parser.parse(PackageCodeReader.read());
+        excelExporter.export(packageDatas, "./exported-" + UUID.randomUUID() + ".xlsx");
     }
 
     private void beep() {
