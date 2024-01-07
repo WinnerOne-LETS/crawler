@@ -1,20 +1,13 @@
 package com.yanolja_final.crawler;
 
 import com.yanolja_final.crawler.application.DetailCrawler;
-import com.yanolja_final.crawler.application.ListCrawler;
-import com.yanolja_final.crawler.application.RenderedHtmlCrawler;
-import com.yanolja_final.crawler.application.dto.PackageCode;
+import com.yanolja_final.crawler.application.PackageDataParser;
 import com.yanolja_final.crawler.reader.PackageCodeReader;
-import java.awt.Toolkit;
-import java.util.List;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import lombok.extern.slf4j.Slf4j;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -25,12 +18,12 @@ import org.springframework.stereotype.Component;
 public class Main implements ApplicationRunner {
 
     @Autowired
-    DetailCrawler detailCrawler;
+    PackageDataParser parser;
 
     @Override
     public void run(ApplicationArguments args) {
         try {
-            detailCrawler.crawle(PackageCodeReader.read());
+            parser.parse(PackageCodeReader.read());
         } catch (Exception e) {
             beep();
             throw new RuntimeException(e);

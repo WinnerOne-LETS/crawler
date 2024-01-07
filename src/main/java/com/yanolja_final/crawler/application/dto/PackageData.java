@@ -16,17 +16,18 @@ public record PackageData(
     String title, // info
     String transportation, // html
     String info, // html
-    String introImageUrl, // goods
+    List<String> introImageUrls, // goods
     int lodgeDays, // html
     int tripDays, // html
     String inclusionList, // goods
     String exclusionList, // goods
     int shoppingCount, // info
-    int optionalTourCount, // goods
+    int optionalTourCount, // optionalTourCount
     int adultPrice, // info
     int infantPrice, // info
     int babyPrice, // info
     List<DepartureData> departures, // calendar
+    int reservationCount,
     int minReservationCount, // goods
     int maxReservationCount, // goods
     List<ScheduleData> schedules, // info
