@@ -63,6 +63,7 @@ public class PackageDataParser {
             .limit(10)
             .toList();
         String transportation = !renderedHtml.contains("교통편</dt><dd>") ? "항공불포함" : renderedHtml.split("교통편</dt><dd>")[1].split("</dd>")[0];
+        transportation = transportation.trim();
         String[] infos = Arrays.stream(renderedHtml.split("<ul class=\"pictogram\">")[1].split("</ul>")[0].split("<span class=\"text\">"))
             .skip(1)
             .map(t -> t.split("</span>")[0])
