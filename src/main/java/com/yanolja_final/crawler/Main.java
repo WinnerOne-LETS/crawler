@@ -35,6 +35,7 @@ public class Main implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         List<PackageData> packageDatas = parser.parse(PackageCodeReader.read());
         String sql = converter.convert(packageDatas);
+        sql = sql.replace("'null'", "NULL");
 
         saveFile("data.sql", sql);
     }

@@ -16,7 +16,6 @@ public class SqlConverter {
     public String convert(List<PackageData> datas) {
         StringBuilder sb = new StringBuilder();
 
-
         for (PackageData data : datas) {
             String url = "https://travel.interpark.com/tour/goods?goodsCd=" + data.code().goodsCode();
             sb.append("-- ").append(url)
@@ -48,7 +47,7 @@ public class SqlConverter {
 
         // INSERT INTO package
         String code = data.code().goodsCode();
-        sb.append("INSERT INTO package (id, departure_time, end_time, nation_id, continent_id, title, transportation, info, intro_image_url, lodge_days, trip_days, inclusion_list, exclusion_list, viewed_count, purchased_count, monthly_purchased_count, shopping_count, schedules) ")
+        sb.append("INSERT INTO package (id, departure_time, end_time, nation_id, continent_id, title, transportation, info, lodge_days, trip_days, inclusion_list, exclusion_list, viewed_count, purchased_count, monthly_purchased_count, shopping_count, schedules) ")
             .append("VALUES (")
             .append(code).append(", ")
             .append("'").append(data.departureTime()).append("', ")
@@ -58,7 +57,6 @@ public class SqlConverter {
             .append("'").append(data.title()).append("', ")
             .append("'").append(data.transportation()).append("', ")
             .append("'").append(data.info().replace("\n", "\\n")).append("', ")
-            .append("'").append(data.introImageUrls().get(0)).append("', ")
             .append(data.lodgeDays()).append(", ")
             .append(data.tripDays()).append(", ")
             .append("'").append(inclusionListJson).append("', ")
