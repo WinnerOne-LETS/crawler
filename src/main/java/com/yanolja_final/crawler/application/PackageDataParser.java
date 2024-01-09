@@ -81,6 +81,11 @@ public class PackageDataParser {
             .skip(1)
             .map(t -> t.split("\\\\\"")[0])
             .toList();
+
+        if (introImageUrls.stream().anyMatch(i -> i.startsWith("data:image/png"))) {
+            return null;
+        }
+
         if (introImageUrls.isEmpty()) {
             return null;
         }
