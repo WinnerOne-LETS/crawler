@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +40,10 @@ public class PackageDataParser {
                 }
                 return parse(code);
             })
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        log.info("{}개 파싱 완료", idx.get());
+        log.info("{}개 파싱 완료", collect.size());
 
         return collect;
     }
@@ -79,6 +81,9 @@ public class PackageDataParser {
             .skip(1)
             .map(t -> t.split("\\\\\"")[0])
             .toList();
+        if (introImageUrls.isEmpty()) {
+            return null;
+        }
 
         String unparsedInclusionList = goodsJson.split("\"InclusionList\":")[1].split(",\"InfantPrice\"")[0];
         String inclusionList = parse(unparsedInclusionList);
@@ -96,6 +101,7 @@ public class PackageDataParser {
         String infoJson = read(code, "infoResponse");
 
         String nationName = !infoJson.contains("NationInfo\":[{\"Name\":\"") ? "" : infoJson.split("\"NationInfo\":\\[\\{\"Name\":\"")[1].split("\"")[0];
+
         String title = infoJson.split("GoodsName\":\"")[1].split("\"")[0];
         int shoppingCount = Integer.parseInt(infoJson.split("\"ShoppingCnt\":")[1].split(",")[0]);
 
@@ -207,6 +213,14 @@ public class PackageDataParser {
         }
         log.debug("schedules\n선택관광 수: {}\n일정들: {}", optionalTourCount, scheduleDatas);
 
+        if (scheduleDatas.isEmpty()) {
+            return null;
+        }
+
+        if (nationName.isEmpty()) {
+            nationName = fillNationName(code.goodsCode());
+        }
+
         return new PackageData(
             code,
             departureDate,
@@ -234,6 +248,32 @@ public class PackageDataParser {
             scheduleDatas,
             reviews
         );
+    }
+
+    private String fillNationName(String goodsCode) {
+        return switch (goodsCode) {
+            case "24021317796", "24011617576", "24020718291", "24021517927",
+                "24053012806", "24011118383", "24070210060", "24011718644",
+                "24013018077", "24061410062", "24011617214", "24061710106" -> "몰디브";
+
+            case "24060310182", "24040614043", "24032320086", "24032710490",
+                "24040614041", "24032417357", "24041610084", "24091510075",
+                "24052610193", "24040618846" -> "일본";
+
+            case "24031320107" -> "중국";
+
+            case "24012321190", "24011723450" -> "태국";
+
+            case "24012926360" -> "인도네시아";
+
+            case "24022023018" -> "스페인";
+
+            case "24030224384" -> "프랑스";
+
+            case "24012523695" -> "미국";
+
+            default -> throw new RuntimeException(goodsCode + "나라 분류 안됨");
+        };
     }
 
     private static String parse(String strInclusionList) {

@@ -2,8 +2,13 @@ package com.yanolja_final.crawler;
 
 import com.yanolja_final.crawler.application.ExcelExporter;
 import com.yanolja_final.crawler.application.PackageDataParser;
+import com.yanolja_final.crawler.application.SqlConverter;
 import com.yanolja_final.crawler.application.dto.PackageData;
 import com.yanolja_final.crawler.reader.PackageCodeReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import javax.sound.sampled.AudioFormat;
@@ -24,12 +29,24 @@ public class Main implements ApplicationRunner {
     PackageDataParser parser;
 
     @Autowired
-    ExcelExporter excelExporter;
+    SqlConverter converter;
 
     @Override
     public void run(ApplicationArguments args) {
         List<PackageData> packageDatas = parser.parse(PackageCodeReader.read());
-        excelExporter.export(packageDatas, "./exported-" + UUID.randomUUID() + ".xlsx");
+        String sql = converter.convert(packageDatas);
+
+        saveFile("data.sql", sql);
+    }
+
+    public void saveFile(String fileName, String content) {
+        String filePath = Paths.get(System.getProperty("user.dir"), "/", fileName).toString();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            writer.write(content);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void beep() {
