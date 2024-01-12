@@ -2,6 +2,7 @@ package com.yanolja_final.crawler.application;
 
 import com.yanolja_final.crawler.application.dto.DepartureData;
 import com.yanolja_final.crawler.application.dto.PackageData;
+import com.yanolja_final.crawler.application.dto.ReviewData;
 import com.yanolja_final.crawler.application.dto.ScheduleData;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +92,16 @@ public class SqlConverter {
             sb.append("INSERT INTO package_intro_image (package_id, image_url) VALUES (")
                 .append(code).append(", '")
                 .append(introImageUrl).append("');\n");
+        }
+
+        for (ReviewData review : data.reviews()) {
+            sb.append("INSERT INTO review(package_id, content, product_score, schedule_score, guide_score, appointment_score) VALUES(")
+                .append(code).append(", ")
+                .append("'").append(review.content()).append("', ")
+                .append(review.productScore()).append(", ")
+                .append(review.scheduleScore()).append(", ")
+                .append(review.guideScore()).append(", ")
+                .append(review.appointmentScore()).append(");\n");
         }
 
         return sb.toString();
